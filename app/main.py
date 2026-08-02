@@ -18,12 +18,16 @@ def run_single_analysis(model, output_dir: Path) -> dict:
     - gera diagramas apenas para frame2d.
     """
 
+    from core.timing import TimingReport
+
+    timing = TimingReport()
+
     if getattr(model, "analysis_type", "frame2d") == "frame3d":
         return run_single_analysis_3d(model, output_dir)
 
     return run_single_analysis_2d(model, output_dir)
 
-def run_single_analysis_2d(model, output_dir: Path) -> dict:
+def run_single_analysis_2d(model, output_dir: Path, timing=None) -> dict:
     """
     Executa uma análise 2D.
     """
@@ -34,35 +38,49 @@ def run_single_analysis_2d(model, output_dir: Path) -> dict:
     from io_module.results_writer import write_results_json
     from plots.diagrams import generate_all_diagrams
     from core.deflection import write_preliminary_deflection_summary_txt
+    from core.timing import TimingReport
+
+    timing = timing or TimingReport()
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("[3/5] Validando e resolvendo modelo estrutural...")
 
-    validate_model(model)
-    results = solve_structure(model)
+    with timing.step("Validação do modelo 2D"):
+        validate_model(model)
 
-    results = enrich_results(model, results)
-    print_analysis_summary(results)
+    with timing.step("Solver 2D"):
+        results = solve_structure(model)
 
-    write_preliminary_deflection_summary_txt(
-        model=model,
-        results=results,
-        file_path=output_dir / "resumo_flechas.txt",
-    )
+    with timing.step("Pós-processamento 2D"):
+        results = enrich_results(model, results)
+        print_analysis_summary(results)
+
+        write_preliminary_deflection_summary_txt(
+            model=model,
+            results=results,
+            file_path=output_dir / "resumo_flechas.txt",
+        )
 
     print("[4/5] Salvando resultados...")
 
-    write_results_json(results, output_dir / "resultados.json")
+    with timing.step("Salvamento resultados 2D"):
+        write_results_json(results, output_dir / "resultados.json")
 
     print("[5/5] Gerando resultados gráficos...")
 
-    generate_all_diagrams(model, results, output_dir)
+    with timing.step("Gráficos 2D"):
+        generate_all_diagrams(model, results, output_dir)
+
+    with timing.step("Salvamento relatório de tempo"):
+        timing.save(output_dir)
+
+    timing.print_summary()
 
     return results
 
 
-def run_single_analysis_3d(model, output_dir: Path) -> dict:
+def run_single_analysis_3d(model, output_dir: Path, timing=None) -> dict:
     """
     Executa uma análise 3D.
 
@@ -94,118 +112,141 @@ def run_single_analysis_3d(model, output_dir: Path) -> dict:
     from core.column_critical_csv_3d import write_column_critical_forces_3d_csv
     from core.column_critical_report_3d import write_column_critical_forces_3d_report_txt
     from core.design_summary_3d import write_frame3d_memorial_txt
+    from core.timing import TimingReport
+
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    timing = timing or TimingReport()
+
     print("[3/5] Validando e resolvendo modelo estrutural 3D...")
 
-    validate_model(model)
-    results = solve_structure_3d(model)
+    with timing.step("Validação do modelo 3D"):
+        validate_model(model)
 
-    print_analysis_summary_3d(results)
-    write_preliminary_deflection_summary_txt(
-        model=model,
-        results=results,
-        file_path=output_dir / "resumo_flechas.txt",
-    )
+    with timing.step("Solver 3D"):
+        results = solve_structure_3d(model)
+
+    with timing.step("Resumo e flechas 3D"):
+        print_analysis_summary_3d(results)
+
+        write_preliminary_deflection_summary_txt(
+            model=model,
+            results=results,
+            file_path=output_dir / "resumo_flechas.txt",
+        )
 
     print("[4/5] Salvando resultados...")
 
-    write_results_json(results, output_dir / "resultados.json")
+    with timing.step("Salvamento resultados 3D"):
+        write_results_json(results, output_dir / "resultados.json")
 
-    envelope = create_envelope_3d({"ANALISE_UNICA": results})
+    with timing.step("Envoltória 3D"):
+        envelope = create_envelope_3d({"ANALISE_UNICA": results})
 
-    save_envelope_3d_json(
-        envelope,
-        Path(output_dir) / "envoltoria_3d.json",
-    )
+        save_envelope_3d_json(
+            envelope,
+            Path(output_dir) / "envoltoria_3d.json",
+        )
 
-    write_envelope_3d_csv(
-        envelope,
-        Path(output_dir) / "envoltoria_3d.csv",
-    )
+        write_envelope_3d_csv(
+            envelope,
+            Path(output_dir) / "envoltoria_3d.csv",
+        )
 
-    write_envelope_3d_report_txt(
-        envelope,
-        Path(output_dir) / "resumo_envoltoria_3d.txt",
-    )
+        write_envelope_3d_report_txt(
+            envelope,
+            Path(output_dir) / "resumo_envoltoria_3d.txt",
+        )
 
-    write_displacement_summary_3d_txt(
-        results,
-        Path(output_dir) / "resumo_deslocamentos_3d.txt",
-    )
+    with timing.step("Deslocamentos 3D"):
+        write_displacement_summary_3d_txt(
+            results,
+            Path(output_dir) / "resumo_deslocamentos_3d.txt",
+        )
 
-    write_displacements_3d_csv(
-        results,
-        Path(output_dir) / "deslocamentos_3d.csv",
-    )
+        write_displacements_3d_csv(
+            results,
+            Path(output_dir) / "deslocamentos_3d.csv",
+        )
 
-    beam_design_3d = design_frame3d_beams_preliminary(
-        model=model,
-        envelope=envelope,
-    )
+    with timing.step("Dimensionamento preliminar vigas 3D"):
+        beam_design_3d = design_frame3d_beams_preliminary(
+            model=model,
+            envelope=envelope,
+        )
 
-    write_beam_design_3d_csv(
-        beam_design_3d,
-        Path(output_dir) / "dimensionamento_vigas_3d.csv",
-    )
+        write_beam_design_3d_csv(
+            beam_design_3d,
+            Path(output_dir) / "dimensionamento_vigas_3d.csv",
+        )
 
-    write_beam_design_3d_report_txt(
-        beam_design_3d,
-        Path(output_dir) / "resumo_dimensionamento_vigas_3d.txt",
-    )
+        write_beam_design_3d_report_txt(
+            beam_design_3d,
+            Path(output_dir) / "resumo_dimensionamento_vigas_3d.txt",
+        )
 
-    beam_shear_torsion_3d = create_beam_shear_torsion_report_3d(
-        model=model,
-        envelope=envelope,
-    )
+    with timing.step("Cortante e torção vigas 3D"):
+        beam_shear_torsion_3d = create_beam_shear_torsion_report_3d(
+            model=model,
+            envelope=envelope,
+        )
 
-    write_beam_shear_torsion_3d_csv(
-        beam_shear_torsion_3d,
-        Path(output_dir) / "vigas_cortante_torcao_3d.csv",
-    )
+        write_beam_shear_torsion_3d_csv(
+            beam_shear_torsion_3d,
+            Path(output_dir) / "vigas_cortante_torcao_3d.csv",
+        )
 
-    write_beam_shear_torsion_3d_report_txt(
-        beam_shear_torsion_3d,
-        Path(output_dir) / "resumo_vigas_cortante_torcao_3d.txt",
-    )
+        write_beam_shear_torsion_3d_report_txt(
+            beam_shear_torsion_3d,
+            Path(output_dir) / "resumo_vigas_cortante_torcao_3d.txt",
+        )
 
-    column_forces_3d = create_column_critical_forces_3d(
-        model=model,
-        envelope=envelope,
-    )
+    with timing.step("Pilares 3D"):
+        column_forces_3d = create_column_critical_forces_3d(
+            model=model,
+            envelope=envelope,
+        )
 
-    write_column_critical_forces_3d_csv(
-        column_forces_3d,
-        Path(output_dir) / "pilares_3d.csv",
-    )
+        write_column_critical_forces_3d_csv(
+            column_forces_3d,
+            Path(output_dir) / "pilares_3d.csv",
+        )
 
-    write_column_critical_forces_3d_report_txt(
-        column_forces_3d,
-        Path(output_dir) / "resumo_pilares_3d.txt",
-    )
+        write_column_critical_forces_3d_report_txt(
+            column_forces_3d,
+            Path(output_dir) / "resumo_pilares_3d.txt",
+        )
 
-    write_frame3d_memorial_txt(
-        model=model,
-        results=results,
-        envelope=envelope,
-        beam_design=beam_design_3d,
-        column_report=column_forces_3d,
-        output_path=Path(output_dir) / "memorial_3d.txt",
-    )
+    with timing.step("Memorial 3D"):
+        write_frame3d_memorial_txt(
+            model=model,
+            results=results,
+            envelope=envelope,
+            beam_design=beam_design_3d,
+            column_report=column_forces_3d,
+            output_path=Path(output_dir) / "memorial_3d.txt",
+        )
 
     print("[5/5] Gerando resultados gráficos 3D...")
 
-    generate_all_diagrams_3d(model, results, output_dir)
+    with timing.step("Gráficos PNG 3D"):
+        generate_all_diagrams_3d(model, results, output_dir)
 
-    interactive_outputs = generate_all_interactive_diagrams_3d(
-        model=model,
-        results=results,
-        output_dir=output_dir,
-    )
+    with timing.step("HTML interativo 3D"):
+        interactive_outputs = generate_all_interactive_diagrams_3d(
+            model=model,
+            results=results,
+            output_dir=output_dir,
+        )
 
     if interactive_outputs.get("structure_html"):
         print(f"Visual interativo salvo em: {interactive_outputs['structure_html']}")
+
+    with timing.step("Salvamento relatório de tempo"):
+        timing.save(output_dir)
+
+    timing.print_summary()
 
     return results
 
