@@ -58,6 +58,8 @@ def generate_structure_plot_3d(
     Gera a visualização da estrutura tridimensional indeformada.
     """
 
+    clean_mode = is_large_model_for_graphics(model)
+
     fig = plt.figure(figsize=(9, 7))
     ax = fig.add_subplot(111, projection="3d")
 
@@ -74,28 +76,41 @@ def generate_structure_plot_3d(
             [xi, xj],
             [yi, yj],
             [zi, zj],
-            linewidth=2.0,
-            marker="o",
+            linewidth=1.4 if clean_mode else 2.0,
+            marker=None if clean_mode else "o",
         )
 
         all_points.append(np.array([xi, yi, zi], dtype=float))
         all_points.append(np.array([xj, yj, zj], dtype=float))
 
-        xm = 0.5 * (xi + xj)
-        ym = 0.5 * (yi + yj)
-        zm = 0.5 * (zi + zj)
+        if not clean_mode:
+            xm = 0.5 * (xi + xj)
+            ym = 0.5 * (yi + yj)
+            zm = 0.5 * (zi + zj)
 
-        ax.text(xm, ym, zm, f"E{element.id}", fontsize=8)
+            ax.text(xm, ym, zm, f"E{element.id}", fontsize=8)
 
-    for node in model.nodes:
-        ax.text(node.x, node.y, node.z, f"N{node.id}", fontsize=8)
-        plot_supports_3d(ax, model)
-        plot_nodal_loads_3d(ax, model, load_scale=load_scale)
-        distributed_load_scale = calculate_distributed_load_scale_factor(model)
-        plot_distributed_loads_3d(ax, model,    load_scale=distributed_load_scale)
-        add_legend_if_needed(ax)
+    if not clean_mode:
+        for node in model.nodes:
+            ax.text(node.x, node.y, node.z, f"N{node.id}", fontsize=8)
 
-    ax.set_title("Estrutura 3D")
+    plot_supports_3d(ax, model)
+    plot_nodal_loads_3d(ax, model, load_scale=load_scale)
+
+    distributed_load_scale = calculate_distributed_load_scale_factor(model)
+    plot_distributed_loads_3d(
+        ax,
+        model,
+        load_scale=distributed_load_scale,
+    )
+
+    add_legend_if_needed(ax)
+
+    title = "Estrutura 3D"
+    if clean_mode:
+        title += " - modo limpo"
+
+    ax.set_title(title)
     configure_3d_axes(ax)
     set_equal_3d_axes(ax, all_points)
 
