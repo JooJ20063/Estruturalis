@@ -1,5 +1,6 @@
 # app/main.py
 
+from dataclasses import dataclass
 from pathlib import Path
 import argparse
 import sys
@@ -8,8 +9,31 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+@dataclass(frozen=True)
+class ExecutionOptions:
+    """
+    Controla quais saídas adicionais serão geradas durante a análise.
+    
+    O comportamento padrão permanece completo para preservar
+    compatibilidade com os comandos e validações existentes.
+    """
 
-def run_single_analysis(model, output_dir: Path) -> dict:
+    generate_plots: bool = True
+    generate_html: bool = True
+
+    @classmethod
+    def from_cli_args(cls, args: argparse.Namespace) -> "ExecutionOptions":
+        """
+        Converte as opções recebidas pela linha de comando
+        para a configuração interna da aplicação.
+        """
+
+        fast_mode = bool(args.fast)
+        return cls(
+            generate_plots=not (args.no_plots or fast_mode),
+            generate_html=not (args.no_html or fast_mode),
+        )
+def run_single_analysis(model, output_dir: Path, options: ExecutionOptions | None = None, ) -> dict:
     """
     Executa uma análise individual:
     - valida modelo;
@@ -17,26 +41,27 @@ def run_single_analysis(model, output_dir: Path) -> dict:
     - salva JSON;
     - gera diagramas apenas para frame2d.
     """
-
+    options = options or ExecutionOptions()
     from core.timing import TimingReport
 
     timing = TimingReport()
 
     if getattr(model, "analysis_type", "frame2d") == "frame3d":
-        return run_single_analysis_3d(model, output_dir)
+        return run_single_analysis_3d(model, output_dir, timing=timing, options=options,)
 
-    return run_single_analysis_2d(model, output_dir)
+    return run_single_analysis_2d(model, output_dir, timing=timing, options=options,)
 
-def run_single_analysis_2d(model, output_dir: Path, timing=None) -> dict:
+def run_single_analysis_2d(model, output_dir: Path, timing=None, options: ExecutionOptions | None = None) -> dict:
     """
     Executa uma análise 2D.
     """
+
+    options = options or ExecutionOptions()
 
     from core.validation import validate_model
     from core.solver import solve_structure
     from core.postprocess import enrich_results, print_analysis_summary
     from io_module.results_writer import write_results_json
-    from plots.diagrams import generate_all_diagrams
     from core.deflection import write_preliminary_deflection_summary_txt
     from core.timing import TimingReport
 
@@ -67,20 +92,25 @@ def run_single_analysis_2d(model, output_dir: Path, timing=None) -> dict:
     with timing.step("Salvamento resultados 2D"):
         write_results_json(results, output_dir / "resultados.json")
 
-    print("[5/5] Gerando resultados gráficos...")
+    if options.generate_plots:
+        print("[5/5] Gerando resultados gráficos...")
 
-    with timing.step("Gráficos 2D"):
-        generate_all_diagrams(model, results, output_dir)
+        from plots.diagram import generate_all_diagrams
 
-    with timing.step("Salvamento relatório de tempo"):
-        timing.save(output_dir)
+        with timing.step("Gráficos 2D"):
+            generate_all_diagrams(model, results, output_dir)
+    else:
+        print("[5/5] Gráficos 2D ignorados pelas opções de execução.")
 
+        timing.skip("Gráficos 2D", "desativados pelas opções de execução",)
+
+    timing_report = timing.save(output_dir)
     timing.print_summary()
 
     return results
 
 
-def run_single_analysis_3d(model, output_dir: Path, timing=None) -> dict:
+def run_single_analysis_3d(model, output_dir: Path, timing=None, options: ExecutionOptions | None = None,) -> dict:
     """
     Executa uma análise 3D.
 
@@ -91,12 +121,12 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None) -> dict:
     - não roda pós-processamento 2D.
     """
 
+    options = options or ExecutionOptions()
+
     from core.validation import validate_model
     from core.solver_3d import solve_structure_3d
     from io_module.results_writer import write_results_json
     from core.deflection import write_preliminary_deflection_summary_txt
-    from plots.diagrams_3d import generate_all_diagrams_3d
-    from plots.interactive_3d import generate_all_interactive_diagrams_3d
     from core.envelope_3d import create_envelope_3d, save_envelope_3d_json
     from core.envelope_csv_3d import write_envelope_3d_csv
     from core.envelope_report_3d import write_envelope_3d_report_txt
@@ -228,24 +258,39 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None) -> dict:
             output_path=Path(output_dir) / "memorial_3d.txt",
         )
 
-    print("[5/5] Gerando resultados gráficos 3D...")
+    print("[5/5] Processando saídas gráficas 3D...")
 
-    with timing.step("Gráficos PNG 3D"):
-        generate_all_diagrams_3d(model, results, output_dir)
+    if options.generate_plots:
+        from plots.diagrams_3d import generate_all_diagrams_3d
 
-    with timing.step("HTML interativo 3D"):
-        interactive_outputs = generate_all_interactive_diagrams_3d(
-            model=model,
-            results=results,
-            output_dir=output_dir,
-        )
+        with timing.step("Gráficos PNG 3D"):
+            generate_all_diagrams_3d(model, results, output_dir)
+    else:
+        print("Gráficos PNG 3D ignorados pelas opções de execução.")
 
-    if interactive_outputs.get("structure_html"):
-        print(f"Visual interativo salvo em: {interactive_outputs['structure_html']}")
+        timing.skip("Gráficos PNG 3D", "desativados pelas opções de execução",)
 
-    with timing.step("Salvamento relatório de tempo"):
-        timing.save(output_dir)
+    if options.generate_html:
+        from plots.interactive_3d import generate_all_interactive_diagrams_3d
 
+        with timing.step("HTML interativo 3D"):
+            interactive_outputs = generate_all_interactive_diagrams_3d(
+                model=model,
+                results=results,
+                output_dir=output_dir,
+            )
+
+        if interactive_outputs.get("structure_html"):
+            print(
+                "Visual interativo salvo em: "
+                f"{interactive_outputs['structure_html']}"
+            )
+    else:
+        print("HTML interativo 3D ignorado pelas opções de execução.")
+
+        timing.skip("HTML interativo 3D", "desativado pelas opções de execução",)
+
+    timing_report = timing.save(output_dir)
     timing.print_summary()
 
     return results
@@ -463,7 +508,7 @@ def find_max_abs_element_force_entry(elements, keys):
     return best
 
 
-def run_analysis(input_file: Path, output_dir: Path) -> None:
+def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions | None = None) -> None:
     """
     Executa a análise estrutural a partir de um arquivo JSON.
 
@@ -472,6 +517,8 @@ def run_analysis(input_file: Path, output_dir: Path) -> None:
     - load_cases;
     - combinations.
     """
+
+    options = options or ExecutionOptions()
 
     if not input_file.exists():
         raise FileNotFoundError(f"Arquivo de entrada não encontrado: {input_file}")
@@ -523,7 +570,7 @@ def run_analysis(input_file: Path, output_dir: Path) -> None:
             combined_model = build_model_for_combination(model, combination)
             combination_output_dir = output_dir / combination.name
 
-            results = run_single_analysis(combined_model, combination_output_dir)
+            results = run_single_analysis(combined_model, combination_output_dir, options=options,)
             combination_results[combination.name] = results
 
             print()
@@ -587,7 +634,7 @@ def run_analysis(input_file: Path, output_dir: Path) -> None:
             case_model = build_model_for_load_case(model, load_case.name)
             case_output_dir = output_dir / load_case.name
 
-            run_single_analysis(case_model, case_output_dir)
+            run_single_analysis(case_model, case_output_dir, options=options,)
 
             print()
             print(f"Resultados do caso salvos em: {case_output_dir}")
@@ -597,7 +644,7 @@ def run_analysis(input_file: Path, output_dir: Path) -> None:
         print("Modelo sem load_cases/combinations. Rodando análise única.")
         print()
 
-        run_single_analysis(model, output_dir)
+        run_single_analysis(model, output_dir, options=options)
 
     print()
     print("Análise concluída com sucesso!")
@@ -624,6 +671,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Pasta onde os resultados serão salvos. Padrão: results"
     )
 
+    parser.add_argument(
+        "--no-plots",
+        action="store_true",
+        help="Não gera gráficos estáticos PNG."
+    )
+
+    parser.add_argument(
+        "--no-html",
+        action="store_true",
+        help="Não gera a visualização HTML interativa"
+    )
+
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Executa em modo rápido, sem gráficos PNG e sem HTML interativo."
+    )
+
     return parser
 
 
@@ -633,9 +698,10 @@ def main() -> int:
 
     input_file = Path(args.input)
     output_dir = Path(args.output)
+    options = ExecutionOptions.from_cli_args(args)
 
     try:
-        run_analysis(input_file, output_dir)
+        run_analysis(input_file, output_dir, options=options)
         return 0
 
     except Exception as error:
