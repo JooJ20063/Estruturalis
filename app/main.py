@@ -152,8 +152,7 @@ def run_single_analysis_2d(model, output_dir: Path, timing=None, options: Execut
 
     if options.generate_plots:
         print("[5/5] Gerando resultados gráficos...")
-
-        from plots.diagram import generate_all_diagrams
+        from plots.diagrams import generate_all_diagrams
 
         with timing.step("Gráficos 2D"):
             generate_all_diagrams(model, results, output_dir)
