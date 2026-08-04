@@ -1,6 +1,7 @@
 # app/main.py
 
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 import argparse
 import sys
@@ -9,30 +10,77 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from core.version import __version__
+
+class ExecutionMode(str, Enum):
+    FULL = "full"
+    FAST = "fast"
+    SOLVER_ONLY = "solver_only"
+    SUMMARY_ONLY = "summary_only"
+    REPORTS_ONLY = "reports_only"
+
 @dataclass(frozen=True)
 class ExecutionOptions:
     """
-    Controla quais saídas adicionais serão geradas durante a análise.
-    
-    O comportamento padrão permanece completo para preservar
-    compatibilidade com os comandos e validações existentes.
+    Controla o nível de processamento e as saídas geradas.
     """
 
+    mode: ExecutionMode = ExecutionMode.FULL
     generate_plots: bool = True
     generate_html: bool = True
+    validate_only: bool = False
+
+    @property
+    def generate_summaries(self) -> bool:
+        """
+        Indica se os resumos textuais devem ser gerados.
+        """
+
+        return self.mode != ExecutionMode.SOLVER_ONLY
+
+    @property
+    def generate_detailed_reports(self) -> bool:
+        """
+        Indica se relatórios detalhados, CSVs e memoriais
+        devem ser gerados.
+        """
+
+        return self.mode in {
+            ExecutionMode.FULL,
+            ExecutionMode.FAST,
+            ExecutionMode.REPORTS_ONLY,
+        }
+
+    @property
+    def solver_only(self) -> bool:
+        return self.mode == ExecutionMode.SOLVER_ONLY
 
     @classmethod
     def from_cli_args(cls, args: argparse.Namespace) -> "ExecutionOptions":
         """
-        Converte as opções recebidas pela linha de comando
-        para a configuração interna da aplicação.
+        Converte os argumentos da CLI para uma configuração normalizada.
         """
 
-        fast_mode = bool(args.fast)
+        if args.solver_only:
+            mode = ExecutionMode.SOLVER_ONLY
+        elif args.summary_only:
+            mode = ExecutionMode.SUMMARY_ONLY
+        elif args.reports_only:
+            mode = ExecutionMode.REPORTS_ONLY
+        elif args.fast:
+            mode = ExecutionMode.FAST
+        else:
+            mode = ExecutionMode.FULL
+
+        graphics_enabled = mode == ExecutionMode.FULL and not args.validate_only
+
         return cls(
-            generate_plots=not (args.no_plots or fast_mode),
-            generate_html=not (args.no_html or fast_mode),
+            mode=mode,
+            generate_plots=graphics_enabled and not args.no_plots,
+            generate_html=graphics_enabled and not args.no_html,
+            validate_only=args.validate_only
         )
+
 def run_single_analysis(model, output_dir: Path, options: ExecutionOptions | None = None, ) -> dict:
     """
     Executa uma análise individual:
@@ -79,12 +127,22 @@ def run_single_analysis_2d(model, output_dir: Path, timing=None, options: Execut
 
     with timing.step("Pós-processamento 2D"):
         results = enrich_results(model, results)
-        print_analysis_summary(results)
 
-        write_preliminary_deflection_summary_txt(
-            model=model,
-            results=results,
-            file_path=output_dir / "resumo_flechas.txt",
+    if options.generate_summaries:
+        with timing.step("Resumos 2D"):
+            print_analysis_summary(results)
+
+            write_preliminary_deflection_summary_txt(
+                model=model,
+                results=results,
+                file_path=output_dir / "resumo_flechas.txt",
+            )
+    else:
+        print("Resumos 2D ignorados pelas opções de execução.")
+
+        timing.skip(
+            "Resumos 2D",
+            f"desativados no modo {options.mode.value}",
         )
 
     print("[4/5] Salvando resultados...")
@@ -115,7 +173,7 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
     Executa uma análise 3D.
 
     Nesta etapa:
-    - resolve com solver_3d;
+    - reolve com solver_3d;
     - salva JSON;
     - não gera diagramas;
     - não roda pós-processamento 2D.
@@ -157,19 +215,50 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
     with timing.step("Solver 3D"):
         results = solve_structure_3d(model)
 
-    with timing.step("Resumo e flechas 3D"):
-        print_analysis_summary_3d(results)
+    if options.generate_summaries:
+        with timing.step("Resumo e flechas 3D"):
+            print_analysis_summary_3d(results)
 
-        write_preliminary_deflection_summary_txt(
-            model=model,
-            results=results,
-            file_path=output_dir / "resumo_flechas.txt",
-        )
+            write_preliminary_deflection_summary_txt(model=model, results=results, file_path=output_dir / "resumo_flechas.txt",)
+    else:
+        print("Resumos 3D ignorados pelas opções de execução.")
 
+        timing.skip("Resumo e flechas 3D", f"desativados no modo {options.mode.value}")
     print("[4/5] Salvando resultados...")
 
     with timing.step("Salvamento resultados 3D"):
         write_results_json(results, output_dir / "resultados.json")
+
+
+    if not options.generate_detailed_reports:
+        reason = f"desativados no modo {options.mode.value}"
+
+        skipped_steps = (
+            "Envoltória 3D",
+            "Deslocamentos 3D",
+            "Dimensionamento preliminar vigas 3D",
+            "Cortante e torção vigas 3D",
+            "Pilares 3D",
+            "Memorial 3D",
+        )
+
+        for step_name in skipped_steps:
+            timing.skip(step_name, reason)
+
+        timing.skip(
+            "Gráficos PNG 3D",
+            reason,
+        )
+
+        timing.skip(
+            "HTML interativo 3D",
+            reason,
+        )
+
+        timing_report = timing.save(output_dir)
+        timing.print_summary(timing_report)
+
+        return results
 
     with timing.step("Envoltória 3D"):
         envelope = create_envelope_3d({"ANALISE_UNICA": results})
@@ -289,6 +378,20 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
         print("HTML interativo 3D ignorado pelas opções de execução.")
 
         timing.skip("HTML interativo 3D", "desativado pelas opções de execução",)
+
+    if options.validate_only:
+        from core.validation import validate_model
+
+        validate_model(model)
+
+        print()
+        print("=" * 60)
+        print("Validação concluída com sucesso.")
+        print("=" * 60)
+        print("O modelo estrutural é válido.")
+        print("O solver não foi executado.")
+        print("Nenhum arquivo de saída foi criado.")
+        return
 
     timing_report = timing.save(output_dir)
     timing.print_summary()
@@ -529,21 +632,53 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
     print("Estruturalis - Análise Estrutural")
     print("=" * 60)
     print(f"Arquivo de entrada: {input_file}")
-    print(f"Pasta de saída:      {output_dir}")
+
+    if options.validate_only:
+        print("Modo de execução:     somente validação")
+    else:
+        print(f"Pasta de saída:      {output_dir}")
+
     print()
 
-    print("[1/5] Lendo modelo estrutural...")
+    if options.validate_only:
+        print("[1/1] Lendo e validando modelo estrutural...")
+    else:
+        print("[1/5] Lendo modelo estrutural...")
 
     from io_module.json_reader import read_model_from_json
-    from core.normative_report import write_normative_summary_txt
 
     model = read_model_from_json(input_file)
+
     print(f"Tipo de análise: {model.analysis_type}")
 
-    normative_summary_path = output_dir / "resumo_normativo.txt"
-    write_normative_summary_txt(model, normative_summary_path)
+    frame3d_only_modes = {
+        ExecutionMode.SOLVER_ONLY,
+        ExecutionMode.SUMMARY_ONLY,
+        ExecutionMode.REPORTS_ONLY,
+    }
 
-    print(f"Resumo normativo salvo em: {normative_summary_path}")
+    if (
+        model.analysis_type != "frame3d"
+        and options.mode in frame3d_only_modes
+    ):
+        raise ValueError(
+            f"O modo --{options.mode.value.replace('_', '-')} "
+            "está disponível somente para análises frame3d."
+        )
+
+    if options.generate_summaries:
+        from core.normative_report import write_normative_summary_txt
+
+        normative_summary_path = output_dir / "resumo_normativo.txt"
+        write_normative_summary_txt(model, normative_summary_path)
+
+        print(f"Resumo normativo salvo em: {normative_summary_path}")
+    else:
+        print(
+            "Resumo normativo ignorado no modo "
+            f"{options.mode.value}."
+        )
+
     print()
 
 
@@ -653,7 +788,7 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="MiniTQS",
+        prog="Estruturalis",
         description="Mini software didático de análise estrutural 2D."
     )
 
@@ -684,10 +819,58 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--version",
+        action="version",
+        version=f"Estruturalis {__version__}",
+    )
+
+    execution_mode_group = parser.add_mutually_exclusive_group()
+
+    execution_mode_group.add_argument(
         "--fast",
         action="store_true",
-        help="Executa em modo rápido, sem gráficos PNG e sem HTML interativo."
+        help=(
+            "Executa em modo rápido, sem gráficos PNG "
+            "e sem HTML interativo."
+        ),
     )
+
+    execution_mode_group.add_argument(
+        "--solver-only",
+        action="store_true",
+        help=(
+            "No frame3d, executa somente validação, solver "
+            "e salvamento dos resultados essenciais."
+        ),
+    )
+
+    execution_mode_group.add_argument(
+        "--summary-only",
+        action="store_true",
+        help=(
+            "No frame3d, gera resultados essenciais e "
+            "os principais resumos textuais."
+        ),
+    )
+
+    execution_mode_group.add_argument(
+        "--reports-only",
+        action="store_true",
+        help=(
+            "No frame3d, gera resultados e relatórios, "
+            "sem saídas gráficas."
+        ),
+    )
+
+    execution_mode_group.add_argument(
+        "--validate-only",
+        action="store_true",
+        help=(
+            "Valida o arquivo de entrada sem executar o solver "
+            "ou gerar arquivos de saída."
+        ),
+    )
+
 
     return parser
 
