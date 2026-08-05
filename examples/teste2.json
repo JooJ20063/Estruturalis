@@ -1,0 +1,698 @@
+{
+    "name": "portico_3d_concreto_basico_varanda",
+    "analysis_type": "frame3d",
+
+    "nodes": [
+        {
+            "id": 1,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 2,
+            "x": 4.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 3,
+            "x": 8.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 4,
+            "x": 0.0,
+            "y": 5.0,
+            "z": 0.0
+        },
+        {
+            "id": 5,
+            "x": 4.0,
+            "y": 5.0,
+            "z": 0.0
+        },
+        {
+            "id": 6,
+            "x": 8.0,
+            "y": 5.0,
+            "z": 0.0
+        },
+
+        {
+            "id": 7,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 3.0
+        },
+        {
+            "id": 8,
+            "x": 4.0,
+            "y": 0.0,
+            "z": 3.0
+        },
+        {
+            "id": 9,
+            "x": 8.0,
+            "y": 0.0,
+            "z": 3.0
+        },
+        {
+            "id": 10,
+            "x": 0.0,
+            "y": 5.0,
+            "z": 3.0
+        },
+        {
+            "id": 11,
+            "x": 4.0,
+            "y": 5.0,
+            "z": 3.0
+        },
+        {
+            "id": 12,
+            "x": 8.0,
+            "y": 5.0,
+            "z": 3.0
+        },
+        {
+            "id": 13,
+            "x": 0.0,
+            "y": 7.0,
+            "z": 3.0
+        },
+        {
+            "id": 14,
+            "x": 4.0,
+            "y": 7.0,
+            "z": 3.0
+        },
+        {
+            "id": 15,
+            "x": 8.0,
+            "y": 7.0,
+            "z": 3.0
+        },
+
+        {
+            "id": 16,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 6.0
+        },
+        {
+            "id": 17,
+            "x": 4.0,
+            "y": 0.0,
+            "z": 6.0
+        },
+        {
+            "id": 18,
+            "x": 8.0,
+            "y": 0.0,
+            "z": 6.0
+        },
+        {
+            "id": 19,
+            "x": 0.0,
+            "y": 5.0,
+            "z": 6.0
+        },
+        {
+            "id": 20,
+            "x": 4.0,
+            "y": 5.0,
+            "z": 6.0
+        },
+        {
+            "id": 21,
+            "x": 8.0,
+            "y": 5.0,
+            "z": 6.0
+        },
+        {
+            "id": 22,
+            "x": 0.0,
+            "y": 7.0,
+            "z": 6.0
+        },
+        {
+            "id": 23,
+            "x": 4.0,
+            "y": 7.0,
+            "z": 6.0
+        },
+        {
+            "id": 24,
+            "x": 8.0,
+            "y": 7.0,
+            "z": 6.0
+        }
+    ],
+
+    "materials": [
+        {
+            "id": 1,
+            "name": "concreto_C25",
+            "E": 25000000.0,
+            "gamma": 25.0,
+            "poisson": 0.2
+        }
+    ],
+
+    "sections": [
+        {
+            "id": 1,
+            "name": "pilar_30x30",
+            "type": "rectangular",
+            "b": 0.30,
+            "h": 0.30
+        },
+        {
+            "id": 2,
+            "name": "viga_principal_20x50",
+            "type": "rectangular",
+            "b": 0.20,
+            "h": 0.50
+        },
+        {
+            "id": 3,
+            "name": "viga_varanda_20x45",
+            "type": "rectangular",
+            "b": 0.20,
+            "h": 0.45
+        },
+        {
+            "id": 4,
+            "name": "viga_borda_20x40",
+            "type": "rectangular",
+            "b": 0.20,
+            "h": 0.40
+        }
+    ],
+
+    "elements": [
+        {
+            "id": 1,
+            "node_i": 1,
+            "node_j": 7,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 2,
+            "node_i": 2,
+            "node_j": 8,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 3,
+            "node_i": 3,
+            "node_j": 9,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 4,
+            "node_i": 4,
+            "node_j": 10,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 5,
+            "node_i": 5,
+            "node_j": 11,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 6,
+            "node_i": 6,
+            "node_j": 12,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+
+        {
+            "id": 7,
+            "node_i": 7,
+            "node_j": 16,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 8,
+            "node_i": 8,
+            "node_j": 17,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 9,
+            "node_i": 9,
+            "node_j": 18,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 10,
+            "node_i": 10,
+            "node_j": 19,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 11,
+            "node_i": 11,
+            "node_j": 20,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 12,
+            "node_i": 12,
+            "node_j": 21,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+
+        {
+            "id": 13,
+            "node_i": 7,
+            "node_j": 8,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 14,
+            "node_i": 8,
+            "node_j": 9,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 15,
+            "node_i": 10,
+            "node_j": 11,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 16,
+            "node_i": 11,
+            "node_j": 12,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 17,
+            "node_i": 7,
+            "node_j": 10,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 18,
+            "node_i": 8,
+            "node_j": 11,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 19,
+            "node_i": 9,
+            "node_j": 12,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 20,
+            "node_i": 10,
+            "node_j": 13,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 21,
+            "node_i": 11,
+            "node_j": 14,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 22,
+            "node_i": 12,
+            "node_j": 15,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 23,
+            "node_i": 13,
+            "node_j": 14,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 24,
+            "node_i": 14,
+            "node_j": 15,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+
+        {
+            "id": 25,
+            "node_i": 16,
+            "node_j": 17,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 26,
+            "node_i": 17,
+            "node_j": 18,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 27,
+            "node_i": 19,
+            "node_j": 20,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 28,
+            "node_i": 20,
+            "node_j": 21,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 29,
+            "node_i": 16,
+            "node_j": 19,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 30,
+            "node_i": 17,
+            "node_j": 20,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 31,
+            "node_i": 18,
+            "node_j": 21,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 32,
+            "node_i": 19,
+            "node_j": 22,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 33,
+            "node_i": 20,
+            "node_j": 23,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 34,
+            "node_i": 21,
+            "node_j": 24,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 35,
+            "node_i": 22,
+            "node_j": 23,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 36,
+            "node_i": 23,
+            "node_j": 24,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        }
+    ],
+
+    "supports": [
+        {
+            "node": 1,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 2,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 3,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 4,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 5,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 6,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        }
+    ],
+
+    "nodal_loads": [
+        {
+            "node": 13,
+            "fz": -10.0
+        },
+        {
+            "node": 14,
+            "fz": -15.0
+        },
+        {
+            "node": 15,
+            "fz": -10.0
+        },
+        {
+            "node": 22,
+            "fz": -10.0
+        },
+        {
+            "node": 23,
+            "fz": -15.0
+        },
+        {
+            "node": 24,
+            "fz": -10.0
+        }
+    ],
+
+    "distributed_loads": [
+        {
+            "element": 13,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 14,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 15,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 16,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 17,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 18,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 19,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+
+        {
+            "element": 20,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 21,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 22,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 23,
+            "coordinate_system": "global",
+            "qz": -5.0
+        },
+        {
+            "element": 24,
+            "coordinate_system": "global",
+            "qz": -5.0
+        },
+
+        {
+            "element": 25,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 26,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 27,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 28,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 29,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 30,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+        {
+            "element": 31,
+            "coordinate_system": "global",
+            "qz": -8.0
+        },
+
+        {
+            "element": 32,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 33,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 34,
+            "coordinate_system": "global",
+            "qz": -10.0
+        },
+        {
+            "element": 35,
+            "coordinate_system": "global",
+            "qz": -5.0
+        },
+        {
+            "element": 36,
+            "coordinate_system": "global",
+            "qz": -5.0
+        }
+    ]
+}

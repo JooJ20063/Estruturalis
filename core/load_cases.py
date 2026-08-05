@@ -30,6 +30,8 @@ def build_model_for_load_case(
 
     return StructuralModel(
         name=f"{base_model.name}_{load_case.name}",
+        analysis_type=base_model.analysis_type,
+        limit_state="GENERIC",
         design_code=dict(base_model.design_code),
         nodes=base_model.nodes,
         materials=base_model.materials,
@@ -70,6 +72,8 @@ def build_model_for_combination(
 
     return StructuralModel(
         name=f"{base_model.name}_{combination.name}",
+        analysis_type=base_model.analysis_type,
+        limit_state=combination.limit_state,
         design_code=dict(base_model.design_code),
         nodes=base_model.nodes,
         materials=base_model.materials,
@@ -80,7 +84,6 @@ def build_model_for_combination(
         distributed_loads=distributed_loads,
         load_cases=[],
         combinations=[],
-        analysis_type=base_model.analysis_type,
     )
 
 
@@ -96,6 +99,9 @@ def scale_nodal_loads(
                 node=load.node,
                 fx=factor * load.fx,
                 fy=factor * load.fy,
+                fz=factor * load.fz,
+                mx=factor * load.mx,
+                my=factor * load.my,
                 mz=factor * load.mz,
             )
         )
@@ -115,6 +121,8 @@ def scale_distributed_loads(
                 element=load.element,
                 qx=factor * load.qx,
                 qy=factor * load.qy,
+                qz=factor * load.qz,
+                coordinate_system=load.coordinate_system,
             )
         )
 

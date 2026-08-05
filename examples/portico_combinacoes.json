@@ -264,6 +264,7 @@
   "combinations": [
     {
       "name": "ELS_01",
+      "limit_state": "ELS",
       "factors": {
         "PP": 1.0,
         "SC": 1.0
@@ -271,6 +272,7 @@
     },
     {
       "name": "ELU_01",
+      "limit_state": "ELU",
       "factors": {
         "PP": 1.4,
         "SC": 1.4
@@ -278,6 +280,7 @@
     },
     {
       "name": "ELU_02",
+      "limit_state": "ELU",
       "factors": {
         "PP": 1.3,
         "SC": 1.0,

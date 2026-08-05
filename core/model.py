@@ -250,7 +250,7 @@ class LoadCombination:
 
     name: str
     factors: dict[str, float]
-
+    limit_state: Literal["ELU", "ELS", "GENERIC"] = "GENERIC"
 
 # ==========================================================
 # MODELO ESTRUTURAL COMPLETO
@@ -267,6 +267,7 @@ class StructuralModel:
 
     name: str = "modelo_sem_nome"
     analysis_type: Literal["frame2d", "frame3d"] = "frame2d"
+    limit_state: Literal["ELU", "ELS", "GENERIC",] = "GENERIC"
     design_code: dict[str, str] = field(default_factory=dict)
 
     nodes: list[Node] = field(default_factory=list)
