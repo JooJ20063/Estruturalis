@@ -1007,43 +1007,57 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
             print(f"Analisando combinação: {combination.name}")
             print("=" * 60)
 
-            combined_model = build_model_for_combination(model, combination)
+            combined_model = build_model_for_combination(
+                model,
+                combination,
+            )
+
             combination_output_dir = output_dir / combination.name
 
-            results = run_single_analysis(combined_model, combination_output_dir, options=options,)
+            results = run_single_analysis(
+                combined_model,
+                combination_output_dir,
+                options=options,
+            )
+
             combination_results[combination.name] = results
             combination_limit_states[combination.name] = (
                 combination.limit_state
             )
 
             print()
-            print(f"Resultados da combinação salvos em: {combination_output_dir}")
+            print(
+                "Resultados da combinação salvos em: "
+                f"{combination_output_dir}"
+            )
             print()
 
-    if model.analysis_type == "frame3d":
-        grouped_results = group_combination_results_by_limit_state(
-            combination_results=combination_results,
-            combination_limit_states=combination_limit_states,
-        )
-
-        if options.generate_detailed_reports:
-            write_frame3d_limit_state_outputs(
-                model=model,
-                grouped_results=grouped_results,
-                output_dir=output_dir,
+        if model.analysis_type == "frame3d":
+            grouped_results = group_combination_results_by_limit_state(
+                combination_results=combination_results,
+                combination_limit_states=combination_limit_states,
             )
-        else:
+
+            if options.generate_detailed_reports:
+                write_frame3d_limit_state_outputs(
+                    model=model,
+                    grouped_results=grouped_results,
+                    output_dir=output_dir,
+                )
+            else:
+                print()
+                print(
+                    "Envoltórias consolidadas 3D ignoradas no modo "
+                    f"{options.mode.value}."
+                )
+
             print()
             print(
-                "Envoltórias consolidadas 3D ignoradas no modo "
-                f"{options.mode.value}."
+                "Análise 3D com combinações concluída com sucesso!"
             )
+            print(f"Resultados salvos em: {output_dir}")
 
-        print()
-        print("Análise 3D com combinações concluída com sucesso!")
-        print(f"Resultados salvos em: {output_dir}")
-
-        return
+            return
 
         print("=" * 60)
         print("Gerando envoltória de esforços")
@@ -1055,18 +1069,39 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
         from core.beam_design import design_beams_from_envelope
         from io_module.results_writer import write_results_json
 
-        envelope = create_element_force_envelope(combination_results)
+        envelope = create_element_force_envelope(
+            combination_results
+        )
 
         envelope_json_path = output_dir / "envoltoria.json"
-        envelope_summary_path = output_dir / "resumo_envoltoria.txt"
-        envelope_csv_path = output_dir / "envoltoria_elementos.csv"
+        envelope_summary_path = (
+            output_dir / "resumo_envoltoria.txt"
+        )
+        envelope_csv_path = (
+            output_dir / "envoltoria_elementos.csv"
+        )
 
-        beam_design_csv_path = output_dir / "dimensionamento_vigas.csv"
-        beam_design_summary_path = output_dir / "resumo_dimensionamento_vigas.txt"
+        beam_design_csv_path = (
+            output_dir / "dimensionamento_vigas.csv"
+        )
+        beam_design_summary_path = (
+            output_dir / "resumo_dimensionamento_vigas.txt"
+        )
 
-        write_results_json(envelope, envelope_json_path)
-        write_envelope_summary_txt(envelope, envelope_summary_path)
-        write_envelope_csv(envelope, envelope_csv_path)
+        write_results_json(
+            envelope,
+            envelope_json_path,
+        )
+
+        write_envelope_summary_txt(
+            envelope,
+            envelope_summary_path,
+        )
+
+        write_envelope_csv(
+            envelope,
+            envelope_csv_path,
+        )
 
         design_beams_from_envelope(
             model=model,
@@ -1076,10 +1111,22 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
         )
 
         print(f"Envoltória salva em: {envelope_json_path}")
-        print(f"Resumo da envoltória salvo em: {envelope_summary_path}")
-        print(f"CSV da envoltória salvo em: {envelope_csv_path}")
-        print(f"Dimensionamento preliminar de vigas salvo em: {beam_design_csv_path}")
-        print(f"Resumo do dimensionamento de vigas salvo em: {beam_design_summary_path}")
+        print(
+            "Resumo da envoltória salvo em: "
+            f"{envelope_summary_path}"
+        )
+        print(
+            "CSV da envoltória salvo em: "
+            f"{envelope_csv_path}"
+        )
+        print(
+            "Dimensionamento preliminar de vigas salvo em: "
+            f"{beam_design_csv_path}"
+        )
+        print(
+            "Resumo do dimensionamento de vigas salvo em: "
+            f"{beam_design_summary_path}"
+        )
         print()
 
     elif has_load_cases(model):
