@@ -269,6 +269,50 @@ def parse_load_cases(items: list[dict]) -> list[LoadCase]:
 
     return load_cases
 
+def parse_combination_limit_state(item: dict) -> str:
+    """
+    Obtém o estado limite associado à combinação.
+
+    Prioridade:
+    1. campo explícito limit_state;
+    2. prefixo ELU ou ELS no nome;
+    3. GENERIC.
+    """
+
+    raw_limit_state = item.get("limit_state")
+
+    if raw_limit_state is None:
+        combination_name = str(item.get("name", "")).strip().upper()
+
+        if combination_name.startswith("ELU"):
+            return "ELU"
+
+        if combination_name.startswith("ELS"):
+            return "ELS"
+
+        return "GENERIC"
+
+    limit_state = str(raw_limit_state).strip().upper()
+
+    aliases = {
+        "ULS": "ELU",
+        "SLS": "ELS",
+        "ULTIMATE": "ELU",
+        "SERVICE": "ELS",
+        "SERVICO": "ELS",
+        "SERVIÇO": "ELS",
+    }
+
+    limit_state = aliases.get(limit_state, limit_state)
+
+    if limit_state not in {"ELU", "ELS", "GENERIC"}:
+        raise ValueError(
+            "limit_state inválido na combinação "
+            f"'{item.get('name', '')}': {limit_state}. "
+            "Valores aceitos: ELU, ELS ou GENERIC."
+        )
+
+    return limit_state
 
 def parse_combinations(items: list[dict]) -> list[LoadCombination]:
     combinations: list[LoadCombination] = []
@@ -284,6 +328,7 @@ def parse_combinations(items: list[dict]) -> list[LoadCombination]:
         combination = LoadCombination(
             name=str(item["name"]),
             factors=factors,
+            limit_state=parse_combination_limit_state(item),
         )
 
         combinations.append(combination)

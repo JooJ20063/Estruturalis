@@ -180,6 +180,17 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
 
     options = options or ExecutionOptions()
 
+    limit_state = str(
+       getattr(model, "limit_state", "GENERIC")
+    ).strip().upper()
+
+    if limit_state not in {"ELU", "ELS", "GENERIC"}:
+         raise ValueError(
+            f"Estado limite inválido no modelo: {limit_state}"
+         )
+
+    generate_strength_reports = limit_state in {"ELU", "GENERIC"}
+
     from core.validation import validate_model
     from core.solver_3d import solve_structure_3d
     from io_module.results_writer import write_results_json
@@ -203,6 +214,8 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
 
 
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Estado limite: {limit_state}")
 
     timing = timing or TimingReport()
 
@@ -288,62 +301,94 @@ def run_single_analysis_3d(model, output_dir: Path, timing=None, options: Execut
             Path(output_dir) / "deslocamentos_3d.csv",
         )
 
-    with timing.step("Dimensionamento preliminar vigas 3D"):
-        beam_design_3d = design_frame3d_beams_preliminary(
-            model=model,
-            envelope=envelope,
+    if generate_strength_reports:
+
+        with timing.step("Dimensionamento preliminar vigas 3D"):
+            beam_design_3d = design_frame3d_beams_preliminary(
+                model=model,
+                envelope=envelope,
+            )
+
+            write_beam_design_3d_csv(
+                beam_design_3d,
+                Path(output_dir) / "dimensionamento_vigas_3d.csv",
+            )
+
+            write_beam_design_3d_report_txt(
+                beam_design_3d,
+                Path(output_dir) / "resumo_dimensionamento_vigas_3d.txt",
+            )
+
+        with timing.step("Cortante e torção vigas 3D"):
+            beam_shear_torsion_3d = create_beam_shear_torsion_report_3d(
+                model=model,
+                envelope=envelope,
+            )
+
+            write_beam_shear_torsion_3d_csv(
+                beam_shear_torsion_3d,
+                Path(output_dir) / "vigas_cortante_torcao_3d.csv",
+            )
+
+            write_beam_shear_torsion_3d_report_txt(
+                beam_shear_torsion_3d,
+                Path(output_dir) / "resumo_vigas_cortante_torcao_3d.txt",
+            )
+
+        with timing.step("Pilares 3D"):
+            column_forces_3d = create_column_critical_forces_3d(
+                model=model,
+                envelope=envelope,
+            )
+
+            write_column_critical_forces_3d_csv(
+                column_forces_3d,
+                Path(output_dir) / "pilares_3d.csv",
+            )
+
+            write_column_critical_forces_3d_report_txt(
+                column_forces_3d,
+                Path(output_dir) / "resumo_pilares_3d.txt",
+            )
+
+        with timing.step("Memorial 3D"):
+            write_frame3d_memorial_txt(
+                model=model,
+                results=results,
+                envelope=envelope,
+                beam_design=beam_design_3d,
+                column_report=column_forces_3d,
+                output_path=Path(output_dir) / "memorial_3d.txt",
+            )
+
+    else:
+        reason = (
+            "não aplicável à combinação ELS; "
+            "relatórios de resistência usam combinações ELU"
         )
 
-        write_beam_design_3d_csv(
-            beam_design_3d,
-            Path(output_dir) / "dimensionamento_vigas_3d.csv",
+        timing.skip(
+            "Dimensionamento preliminar vigas 3D",
+            reason,
+        )
+        timing.skip(
+            "Cortante e torção vigas 3D",
+            reason,
+        )
+        timing.skip(
+            "Pilares 3D",
+            reason,
+        )
+        timing.skip(
+            "Memorial 3D",
+            reason,
         )
 
-        write_beam_design_3d_report_txt(
-            beam_design_3d,
-            Path(output_dir) / "resumo_dimensionamento_vigas_3d.txt",
-        )
-
-    with timing.step("Cortante e torção vigas 3D"):
-        beam_shear_torsion_3d = create_beam_shear_torsion_report_3d(
-            model=model,
-            envelope=envelope,
-        )
-
-        write_beam_shear_torsion_3d_csv(
-            beam_shear_torsion_3d,
-            Path(output_dir) / "vigas_cortante_torcao_3d.csv",
-        )
-
-        write_beam_shear_torsion_3d_report_txt(
-            beam_shear_torsion_3d,
-            Path(output_dir) / "resumo_vigas_cortante_torcao_3d.txt",
-        )
-
-    with timing.step("Pilares 3D"):
-        column_forces_3d = create_column_critical_forces_3d(
-            model=model,
-            envelope=envelope,
-        )
-
-        write_column_critical_forces_3d_csv(
-            column_forces_3d,
-            Path(output_dir) / "pilares_3d.csv",
-        )
-
-        write_column_critical_forces_3d_report_txt(
-            column_forces_3d,
-            Path(output_dir) / "resumo_pilares_3d.txt",
-        )
-
-    with timing.step("Memorial 3D"):
-        write_frame3d_memorial_txt(
-            model=model,
-            results=results,
-            envelope=envelope,
-            beam_design=beam_design_3d,
-            column_report=column_forces_3d,
-            output_path=Path(output_dir) / "memorial_3d.txt",
+        print()
+        print(
+            "Combinação ELS: verificação e relatórios de resistência "
+            "foram ignorados. Resultados de análise, deslocamentos e "
+            "saídas gráficas continuam sendo gerados."
         )
 
     print("[5/5] Processando saídas gráficas 3D...")
@@ -610,6 +655,266 @@ def find_max_abs_element_force_entry(elements, keys):
     return best
 
 
+def group_combination_results_by_limit_state(
+    combination_results: dict,
+    combination_limit_states: dict[str, str],
+) -> dict[str, dict]:
+    """
+    Separa resultados de combinações em ELU, ELS e GENERIC.
+    """
+
+    grouped_results = {
+        "ELU": {},
+        "ELS": {},
+        "GENERIC": {},
+    }
+
+    for combination_name, results in combination_results.items():
+        limit_state = str(
+            combination_limit_states.get(
+                combination_name,
+                "GENERIC",
+            )
+        ).strip().upper()
+
+        if limit_state not in grouped_results:
+            raise ValueError(
+                f"Estado limite inválido na combinação "
+                f"'{combination_name}': {limit_state}"
+            )
+
+        grouped_results[limit_state][combination_name] = results
+
+    return grouped_results
+
+def write_frame3d_limit_state_outputs(
+    model,
+    grouped_results: dict[str, dict],
+    output_dir: Path,
+) -> dict[str, dict]:
+    """
+    Gera envoltórias 3D consolidadas e saídas de resistência por estado limite.
+
+    ELU:
+    - envoltória de esforços;
+    - vigas;
+    - cortante/torção;
+    - pilares.
+
+    ELS:
+    - envoltória de esforços.
+
+    A envoltória consolidada de deslocamentos será tratada separadamente.
+    """
+
+    from core.envelope_3d import (
+        create_envelope_3d,
+        save_envelope_3d_json,
+    )
+    from core.envelope_csv_3d import write_envelope_3d_csv
+    from core.envelope_report_3d import write_envelope_3d_report_txt
+
+    generated_envelopes = {}
+
+    # ======================================================
+    # ELU
+    # ======================================================
+
+    elu_results = grouped_results.get("ELU", {})
+
+    if elu_results:
+        print()
+        print("=" * 60)
+        print("Gerando envoltória consolidada 3D - ELU")
+        print("=" * 60)
+
+        envelope_elu = create_envelope_3d(elu_results)
+        generated_envelopes["ELU"] = envelope_elu
+
+        save_envelope_3d_json(
+            envelope_elu,
+            output_dir / "envoltoria_3d_elu.json",
+        )
+
+        write_envelope_3d_csv(
+            envelope_elu,
+            output_dir / "envoltoria_3d_elu.csv",
+        )
+
+        write_envelope_3d_report_txt(
+            envelope_elu,
+            output_dir / "resumo_envoltoria_3d_elu.txt",
+        )
+
+        from core.beam_design_3d import (
+            design_frame3d_beams_preliminary,
+        )
+        from core.beam_design_csv_3d import (
+            write_beam_design_3d_csv,
+        )
+        from core.beam_design_report_3d import (
+            write_beam_design_3d_report_txt,
+        )
+
+        beam_design_elu = design_frame3d_beams_preliminary(
+            model=model,
+            envelope=envelope_elu,
+        )
+
+        write_beam_design_3d_csv(
+            beam_design_elu,
+            output_dir / "dimensionamento_vigas_3d_elu.csv",
+        )
+
+        write_beam_design_3d_report_txt(
+            beam_design_elu,
+            output_dir / "resumo_dimensionamento_vigas_3d_elu.txt",
+        )
+
+        from core.beam_shear_torsion_3d import (
+            create_beam_shear_torsion_report_3d,
+        )
+        from core.beam_shear_torsion_csv_3d import (
+            write_beam_shear_torsion_3d_csv,
+        )
+        from core.beam_shear_torsion_report_3d import (
+            write_beam_shear_torsion_3d_report_txt,
+        )
+
+        beam_shear_elu = create_beam_shear_torsion_report_3d(
+            model=model,
+            envelope=envelope_elu,
+        )
+
+        write_beam_shear_torsion_3d_csv(
+            beam_shear_elu,
+            output_dir / "vigas_cortante_torcao_3d_elu.csv",
+        )
+
+        write_beam_shear_torsion_3d_report_txt(
+            beam_shear_elu,
+            output_dir / "resumo_vigas_cortante_torcao_3d_elu.txt",
+        )
+
+        from core.column_critical_3d import (
+            create_column_critical_forces_3d,
+        )
+        from core.column_critical_csv_3d import (
+            write_column_critical_forces_3d_csv,
+        )
+        from core.column_critical_report_3d import (
+            write_column_critical_forces_3d_report_txt,
+        )
+
+        columns_elu = create_column_critical_forces_3d(
+            model=model,
+            envelope=envelope_elu,
+        )
+
+        write_column_critical_forces_3d_csv(
+            columns_elu,
+            output_dir / "pilares_3d_elu.csv",
+        )
+
+        write_column_critical_forces_3d_report_txt(
+            columns_elu,
+            output_dir / "resumo_pilares_3d_elu.txt",
+        )
+
+        print(
+            f"Combinações ELU consolidadas: "
+            f"{', '.join(elu_results.keys())}"
+        )
+
+    else:
+        print()
+        print("Nenhuma combinação ELU encontrada.")
+
+    # ======================================================
+    # ELS
+    # ======================================================
+
+    els_results = grouped_results.get("ELS", {})
+
+    if els_results:
+        print()
+        print("=" * 60)
+        print("Gerando envoltória consolidada 3D - ELS")
+        print("=" * 60)
+
+        envelope_els = create_envelope_3d(els_results)
+        generated_envelopes["ELS"] = envelope_els
+
+        save_envelope_3d_json(
+            envelope_els,
+            output_dir / "envoltoria_3d_els.json",
+        )
+
+        write_envelope_3d_csv(
+            envelope_els,
+            output_dir / "envoltoria_3d_els.csv",
+        )
+
+        write_envelope_3d_report_txt(
+            envelope_els,
+            output_dir / "resumo_envoltoria_3d_els.txt",
+        )
+
+        from core.displacement_envelope_3d import (
+            create_displacement_envelope_3d,
+            save_displacement_envelope_3d_json,
+            write_displacement_envelope_3d_csv,
+            write_displacement_envelope_3d_report_txt,
+        )
+
+        displacement_envelope_els = (
+            create_displacement_envelope_3d(
+                els_results
+            )
+        )
+
+        save_displacement_envelope_3d_json(
+            displacement_envelope_els,
+            output_dir
+            / "envoltoria_deslocamentos_3d_els.json",
+        )
+
+        write_displacement_envelope_3d_csv(
+            displacement_envelope_els,
+            output_dir
+            / "envoltoria_deslocamentos_3d_els.csv",
+        )
+
+        write_displacement_envelope_3d_report_txt(
+            displacement_envelope_els,
+            output_dir
+            / "resumo_envoltoria_deslocamentos_3d_els.txt",
+        )
+
+
+        print(
+            f"Combinações ELS consolidadas: "
+            f"{', '.join(els_results.keys())}"
+        )
+
+    else:
+        print()
+        print("Nenhuma combinação ELS encontrada.")
+
+    generic_results = grouped_results.get("GENERIC", {})
+
+    if generic_results:
+        print()
+        print(
+            "Aviso: combinações sem estado limite declarado "
+            "não foram incluídas nas envoltórias ELU ou ELS:"
+        )
+
+        for combination_name in generic_results:
+            print(f"  - {combination_name}")
+
+    return generated_envelopes
+
 def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions | None = None) -> None:
     """
     Executa a análise estrutural a partir de um arquivo JSON.
@@ -695,28 +1000,63 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
         print()
 
         combination_results = {}
+        combination_limit_states = {}
 
         for combination in model.combinations:
             print("=" * 60)
             print(f"Analisando combinação: {combination.name}")
             print("=" * 60)
 
-            combined_model = build_model_for_combination(model, combination)
+            combined_model = build_model_for_combination(
+                model,
+                combination,
+            )
+
             combination_output_dir = output_dir / combination.name
 
-            results = run_single_analysis(combined_model, combination_output_dir, options=options,)
+            results = run_single_analysis(
+                combined_model,
+                combination_output_dir,
+                options=options,
+            )
+
             combination_results[combination.name] = results
+            combination_limit_states[combination.name] = (
+                combination.limit_state
+            )
 
             print()
-            print(f"Resultados da combinação salvos em: {combination_output_dir}")
+            print(
+                "Resultados da combinação salvos em: "
+                f"{combination_output_dir}"
+            )
             print()
 
         if model.analysis_type == "frame3d":
-            print("=" * 60)
-            print("Envoltória e dimensionamento 3D ainda não implementados.")
-            print("=" * 60)
-            print("Resultados 3D das combinações foram salvos nas subpastas.")
+            grouped_results = group_combination_results_by_limit_state(
+                combination_results=combination_results,
+                combination_limit_states=combination_limit_states,
+            )
+
+            if options.generate_detailed_reports:
+                write_frame3d_limit_state_outputs(
+                    model=model,
+                    grouped_results=grouped_results,
+                    output_dir=output_dir,
+                )
+            else:
+                print()
+                print(
+                    "Envoltórias consolidadas 3D ignoradas no modo "
+                    f"{options.mode.value}."
+                )
+
             print()
+            print(
+                "Análise 3D com combinações concluída com sucesso!"
+            )
+            print(f"Resultados salvos em: {output_dir}")
+
             return
 
         print("=" * 60)
@@ -729,18 +1069,39 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
         from core.beam_design import design_beams_from_envelope
         from io_module.results_writer import write_results_json
 
-        envelope = create_element_force_envelope(combination_results)
+        envelope = create_element_force_envelope(
+            combination_results
+        )
 
         envelope_json_path = output_dir / "envoltoria.json"
-        envelope_summary_path = output_dir / "resumo_envoltoria.txt"
-        envelope_csv_path = output_dir / "envoltoria_elementos.csv"
+        envelope_summary_path = (
+            output_dir / "resumo_envoltoria.txt"
+        )
+        envelope_csv_path = (
+            output_dir / "envoltoria_elementos.csv"
+        )
 
-        beam_design_csv_path = output_dir / "dimensionamento_vigas.csv"
-        beam_design_summary_path = output_dir / "resumo_dimensionamento_vigas.txt"
+        beam_design_csv_path = (
+            output_dir / "dimensionamento_vigas.csv"
+        )
+        beam_design_summary_path = (
+            output_dir / "resumo_dimensionamento_vigas.txt"
+        )
 
-        write_results_json(envelope, envelope_json_path)
-        write_envelope_summary_txt(envelope, envelope_summary_path)
-        write_envelope_csv(envelope, envelope_csv_path)
+        write_results_json(
+            envelope,
+            envelope_json_path,
+        )
+
+        write_envelope_summary_txt(
+            envelope,
+            envelope_summary_path,
+        )
+
+        write_envelope_csv(
+            envelope,
+            envelope_csv_path,
+        )
 
         design_beams_from_envelope(
             model=model,
@@ -750,10 +1111,22 @@ def run_analysis(input_file: Path, output_dir: Path, options: ExecutionOptions |
         )
 
         print(f"Envoltória salva em: {envelope_json_path}")
-        print(f"Resumo da envoltória salvo em: {envelope_summary_path}")
-        print(f"CSV da envoltória salvo em: {envelope_csv_path}")
-        print(f"Dimensionamento preliminar de vigas salvo em: {beam_design_csv_path}")
-        print(f"Resumo do dimensionamento de vigas salvo em: {beam_design_summary_path}")
+        print(
+            "Resumo da envoltória salvo em: "
+            f"{envelope_summary_path}"
+        )
+        print(
+            "CSV da envoltória salvo em: "
+            f"{envelope_csv_path}"
+        )
+        print(
+            "Dimensionamento preliminar de vigas salvo em: "
+            f"{beam_design_csv_path}"
+        )
+        print(
+            "Resumo do dimensionamento de vigas salvo em: "
+            f"{beam_design_summary_path}"
+        )
         print()
 
     elif has_load_cases(model):

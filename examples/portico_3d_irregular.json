@@ -1,0 +1,788 @@
+{
+    "name": "portico_3d_irregular",
+    "analysis_type": "frame3d",
+    "self_weight": {
+        "enabled": true,
+        "gamma_default": 25.0,
+        "load_case": "PP"
+    },
+    "design_code": {
+        "concrete_code": "ABNT NBR 6118",
+        "concrete_code_version": "verificar edição vigente",
+        "actions_code": "ABNT NBR 6120",
+        "actions_code_version": "verificar edição vigente",
+        "combinations_code": "ABNT NBR 8681",
+        "combinations_code_version": "verificar edição vigente",
+        "wind_code": "ABNT NBR 6123",
+        "wind_code_version": "verificar edição vigente",
+        "mode": "academic"
+    },
+    "nodes": [
+        {
+            "id": 1,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 2,
+            "x": 5.2,
+            "y": 0.6,
+            "z": 0.0
+        },
+        {
+            "id": 3,
+            "x": 6.1,
+            "y": 4.2,
+            "z": 0.0
+        },
+        {
+            "id": 4,
+            "x": 2.8,
+            "y": 5.5,
+            "z": 0.0
+        },
+        {
+            "id": 5,
+            "x": -0.9,
+            "y": 3.5,
+            "z": 0.0
+        },
+        {
+            "id": 6,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 3.1
+        },
+        {
+            "id": 7,
+            "x": 5.2,
+            "y": 0.6,
+            "z": 3.1
+        },
+        {
+            "id": 8,
+            "x": 6.1,
+            "y": 4.2,
+            "z": 3.1
+        },
+        {
+            "id": 9,
+            "x": 2.8,
+            "y": 5.5,
+            "z": 3.1
+        },
+        {
+            "id": 10,
+            "x": -0.9,
+            "y": 3.5,
+            "z": 3.1
+        },
+        {
+            "id": 11,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 6.2
+        },
+        {
+            "id": 12,
+            "x": 5.2,
+            "y": 0.6,
+            "z": 6.2
+        },
+        {
+            "id": 13,
+            "x": 6.1,
+            "y": 4.2,
+            "z": 6.2
+        },
+        {
+            "id": 14,
+            "x": 2.8,
+            "y": 5.5,
+            "z": 6.2
+        },
+        {
+            "id": 15,
+            "x": -0.9,
+            "y": 3.5,
+            "z": 6.2
+        },
+        {
+            "id": 16,
+            "x": 2.45,
+            "y": 2.75,
+            "z": 3.1
+        },
+        {
+            "id": 17,
+            "x": 2.35,
+            "y": 2.55,
+            "z": 7.4
+        }
+    ],
+    "materials": [
+        {
+            "id": 1,
+            "name": "concreto_C30",
+            "E": 28000000.0,
+            "gamma": 25.0,
+            "poisson": 0.2
+        }
+    ],
+    "sections": [
+        {
+            "id": 1,
+            "name": "pilar_periferico_35x35",
+            "type": "rectangular",
+            "b": 0.35,
+            "h": 0.35
+        },
+        {
+            "id": 2,
+            "name": "mastro_central_40x40",
+            "type": "rectangular",
+            "b": 0.4,
+            "h": 0.4
+        },
+        {
+            "id": 3,
+            "name": "viga_pavimento_22x50",
+            "type": "rectangular",
+            "b": 0.22,
+            "h": 0.5
+        },
+        {
+            "id": 4,
+            "name": "viga_cobertura_20x45",
+            "type": "rectangular",
+            "b": 0.2,
+            "h": 0.45
+        }
+    ],
+    "elements": [
+        {
+            "id": 1,
+            "node_i": 1,
+            "node_j": 6,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 2,
+            "node_i": 2,
+            "node_j": 7,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 3,
+            "node_i": 3,
+            "node_j": 8,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 4,
+            "node_i": 4,
+            "node_j": 9,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 5,
+            "node_i": 5,
+            "node_j": 10,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 6,
+            "node_i": 6,
+            "node_j": 11,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 7,
+            "node_i": 7,
+            "node_j": 12,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 8,
+            "node_i": 8,
+            "node_j": 13,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 9,
+            "node_i": 9,
+            "node_j": 14,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 10,
+            "node_i": 10,
+            "node_j": 15,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 11,
+            "node_i": 6,
+            "node_j": 7,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 12,
+            "node_i": 7,
+            "node_j": 8,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 13,
+            "node_i": 8,
+            "node_j": 9,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 14,
+            "node_i": 9,
+            "node_j": 10,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 15,
+            "node_i": 10,
+            "node_j": 6,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 16,
+            "node_i": 6,
+            "node_j": 16,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 17,
+            "node_i": 7,
+            "node_j": 16,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 18,
+            "node_i": 8,
+            "node_j": 16,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 19,
+            "node_i": 9,
+            "node_j": 16,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 20,
+            "node_i": 10,
+            "node_j": 16,
+            "material": 1,
+            "section": 3,
+            "kind": "frame3d"
+        },
+        {
+            "id": 21,
+            "node_i": 16,
+            "node_j": 17,
+            "material": 1,
+            "section": 2,
+            "kind": "frame3d"
+        },
+        {
+            "id": 22,
+            "node_i": 11,
+            "node_j": 12,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 23,
+            "node_i": 12,
+            "node_j": 13,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 24,
+            "node_i": 13,
+            "node_j": 14,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 25,
+            "node_i": 14,
+            "node_j": 15,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 26,
+            "node_i": 15,
+            "node_j": 11,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 27,
+            "node_i": 11,
+            "node_j": 17,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 28,
+            "node_i": 12,
+            "node_j": 17,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 29,
+            "node_i": 13,
+            "node_j": 17,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 30,
+            "node_i": 14,
+            "node_j": 17,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        },
+        {
+            "id": 31,
+            "node_i": 15,
+            "node_j": 17,
+            "material": 1,
+            "section": 4,
+            "kind": "frame3d"
+        }
+    ],
+    "supports": [
+        {
+            "node": 1,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 2,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 3,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 4,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 5,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        }
+    ],
+    "load_cases": [
+        {
+            "name": "SC_PAVIMENTO",
+            "type": "variable",
+            "distributed_loads": [
+                {
+                    "element": 11,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 12,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 13,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 14,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 15,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 16,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 17,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 18,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 19,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                },
+                {
+                    "element": 20,
+                    "coordinate_system": "global",
+                    "qz": -6.0
+                }
+            ]
+        },
+        {
+            "name": "COBERTURA",
+            "type": "variable",
+            "distributed_loads": [
+                {
+                    "element": 22,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 23,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 24,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 25,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 26,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 27,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 28,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 29,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 30,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                },
+                {
+                    "element": 31,
+                    "coordinate_system": "global",
+                    "qz": -4.0
+                }
+            ]
+        },
+        {
+            "name": "VENTO_X",
+            "type": "wind",
+            "nodal_loads": [
+                {
+                    "node": 6,
+                    "fx": 3.0
+                },
+                {
+                    "node": 7,
+                    "fx": 3.0
+                },
+                {
+                    "node": 8,
+                    "fx": 3.0
+                },
+                {
+                    "node": 9,
+                    "fx": 3.0
+                },
+                {
+                    "node": 10,
+                    "fx": 3.0
+                },
+                {
+                    "node": 11,
+                    "fx": 5.0
+                },
+                {
+                    "node": 12,
+                    "fx": 5.0
+                },
+                {
+                    "node": 13,
+                    "fx": 5.0
+                },
+                {
+                    "node": 14,
+                    "fx": 5.0
+                },
+                {
+                    "node": 15,
+                    "fx": 5.0
+                },
+                {
+                    "node": 17,
+                    "fx": 2.0
+                }
+            ]
+        },
+        {
+            "name": "VENTO_Y",
+            "type": "wind",
+            "nodal_loads": [
+                {
+                    "node": 6,
+                    "fy": 2.5
+                },
+                {
+                    "node": 7,
+                    "fy": 2.5
+                },
+                {
+                    "node": 8,
+                    "fy": 2.5
+                },
+                {
+                    "node": 9,
+                    "fy": 2.5
+                },
+                {
+                    "node": 10,
+                    "fy": 2.5
+                },
+                {
+                    "node": 11,
+                    "fy": 4.0
+                },
+                {
+                    "node": 12,
+                    "fy": 4.0
+                },
+                {
+                    "node": 13,
+                    "fy": 4.0
+                },
+                {
+                    "node": 14,
+                    "fy": 4.0
+                },
+                {
+                    "node": 15,
+                    "fy": 4.0
+                },
+                {
+                    "node": 17,
+                    "fy": 2.0
+                }
+            ]
+        },
+        {
+            "name": "ASSIMETRICA",
+            "type": "variable",
+            "nodal_loads": [
+                {
+                    "node": 12,
+                    "fz": -20.0
+                },
+                {
+                    "node": 13,
+                    "fz": -35.0
+                },
+                {
+                    "node": 17,
+                    "mx": 6.0,
+                    "my": -4.0,
+                    "mz": 8.0
+                }
+            ]
+        },
+        {
+            "name": "CARGA_LOCAL",
+            "type": "variable",
+            "distributed_loads": [
+                {
+                    "element": 23,
+                    "coordinate_system": "local",
+                    "qy": -2.5,
+                    "qz": -1.0
+                }
+            ]
+        }
+    ],
+    "combinations": [
+        {
+            "name": "ELS_GRAVIDADE",
+            "limit_state": "ELS",
+            "factors": {
+                "PP": 1.0,
+                "SC_PAVIMENTO": 1.0,
+                "COBERTURA": 1.0
+            }
+        },
+        {
+            "name": "ELS_VENTO_X",
+            "limit_state": "ELS",
+            "factors": {
+                "PP": 1.0,
+                "SC_PAVIMENTO": 0.6,
+                "COBERTURA": 0.6,
+                "VENTO_X": 0.6
+            }
+        },
+        {
+            "name": "ELS_VENTO_Y",
+            "limit_state": "ELS",
+            "factors": {
+                "PP": 1.0,
+                "SC_PAVIMENTO": 0.6,
+                "COBERTURA": 0.6,
+                "VENTO_Y": 0.6
+            }
+        },
+        {
+            "name": "ELS_ASSIMETRICA",
+            "limit_state": "ELS",
+            "factors": {
+                "PP": 1.0,
+                "SC_PAVIMENTO": 0.5,
+                "COBERTURA": 1.0,
+                "ASSIMETRICA": 1.0,
+                "CARGA_LOCAL": 1.0
+            }
+        },
+        {
+            "name": "ELU_GRAVIDADE",
+            "limit_state": "ELU",
+            "factors": {
+                "PP": 1.4,
+                "SC_PAVIMENTO": 1.4,
+                "COBERTURA": 1.4
+            }
+        },
+        {
+            "name": "ELU_VENTO_X",
+            "limit_state": "ELU",
+            "factors": {
+                "PP": 1.3,
+                "SC_PAVIMENTO": 1.0,
+                "COBERTURA": 1.0,
+                "VENTO_X": 1.4
+            }
+        },
+        {
+            "name": "ELU_VENTO_Y",
+            "limit_state": "ELU",
+            "factors": {
+                "PP": 1.3,
+                "SC_PAVIMENTO": 1.0,
+                "COBERTURA": 1.0,
+                "VENTO_Y": 1.4
+            }
+        },
+        {
+            "name": "ELU_ASSIMETRICA",
+            "limit_state": "ELU",
+            "factors": {
+                "PP": 1.3,
+                "SC_PAVIMENTO": 1.0,
+                "COBERTURA": 1.0,
+                "ASSIMETRICA": 1.4,
+                "CARGA_LOCAL": 1.4
+            }
+        }
+    ]
+}

@@ -14,7 +14,7 @@ def create_normative_summary_text(model):
     lines = []
 
     lines.append("=" * 72)
-    lines.append("RESUMO NORMATIVO - MiniTQS")
+    lines.append("RESUMO NORMATIVO - Estruturalis")
     lines.append("=" * 72)
     lines.append("")
 
