@@ -237,6 +237,262 @@ VALIDATION_CASES = [
             },
         ],
     },
+        {
+        "name": "multielement_cantilever",
+        "example": "viga_3d_console_2elementos.json",
+        "checks": [
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "uz",
+                "expected": -0.008,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "ry",
+                "expected": 0.0072,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 3,
+                "key": "uz",
+                "expected": -0.0256,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 3,
+                "key": "ry",
+                "expected": 0.0096,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fz",
+                "expected": 10.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "my",
+                "expected": -40.0,
+            },
+            {
+                "kind": "element_force_abs",
+                "element": 2,
+                "key": "moment_z_i",
+                "expected_abs": 20.0,
+                "abs_tol": 1.0e-8,
+            },
+        ],
+    },
+
+    {
+        "name": "simple_portal_interaction",
+        "example": "portico_3d_analitico_simples.json",
+        "checks": [
+            {
+                "kind": "displacement",
+                "node": 4,
+                "key": "ux",
+                "expected": 0.00206561903,
+                "abs_tol": 1.0e-9,
+            },
+            {
+                "kind": "reaction",
+                "node": 2,
+                "key": "fx",
+                "expected": -10.0,
+                "abs_tol": 1.0e-8,
+            },
+            {
+                "kind": "element_force_abs",
+                "element": 1,
+                "key": "moment_y_i",
+                "expected_abs": 17.7460714,
+                "abs_tol": 1.0e-6,
+            },
+            {
+                "kind": "element_force_abs",
+                "element": 2,
+                "key": "moment_z_i",
+                "expected_abs": 12.2539286,
+                "abs_tol": 1.0e-6,
+            },
+        ],
+    },
+
+    {
+        "name": "self_weight",
+        "example": "viga_3d_peso_proprio.json",
+        "checks": [
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "uz",
+                "expected": -0.0096,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "ry",
+                "expected": 0.0032,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fz",
+                "expected": 10.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "my",
+                "expected": -20.0,
+            },
+            {
+                "kind": "element_force_abs",
+                "element": 1,
+                "key": "moment_z_i",
+                "expected_abs": 20.0,
+            },
+        ],
+    },
+
+    {
+        "name": "linear_load_combination",
+        "example": "viga_3d_combinacoes_analitica.json",
+        "result_subdir": "COMB_ANALITICA",
+        "checks": [
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "uz",
+                "expected": -0.08832,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "ry",
+                "expected": 0.03072,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fz",
+                "expected": 72.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "my",
+                "expected": -168.0,
+            },
+            {
+                "kind": "element_force_abs",
+                "element": 1,
+                "key": "moment_z_i",
+                "expected_abs": 168.0,
+            },
+        ],
+    },
+
+    {
+        "name": "orthogonal_spatial_frame",
+        "example": "frame3d_espacial_ortogonal.json",
+        "checks": [
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "uz",
+                "expected": -0.0256,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 2,
+                "key": "ry",
+                "expected": 0.0096,
+                "abs_tol": 1.0e-10,
+            },
+
+            {
+                "kind": "displacement",
+                "node": 3,
+                "key": "ux",
+                "expected": 0.008192,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 3,
+                "key": "rz",
+                "expected": -0.003072,
+                "abs_tol": 1.0e-10,
+            },
+
+            {
+                "kind": "displacement",
+                "node": 4,
+                "key": "uy",
+                "expected": 0.0768,
+                "abs_tol": 1.0e-10,
+            },
+            {
+                "kind": "displacement",
+                "node": 4,
+                "key": "rx",
+                "expected": -0.0288,
+                "abs_tol": 1.0e-10,
+            },
+
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fx",
+                "expected": -20.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fy",
+                "expected": -30.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "fz",
+                "expected": 10.0,
+            },
+
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "mx",
+                "expected": 120.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "my",
+                "expected": -40.0,
+            },
+            {
+                "kind": "reaction",
+                "node": 1,
+                "key": "mz",
+                "expected": 80.0,
+            },
+        ],
+    },
 ]
 
 
@@ -355,8 +611,14 @@ def run_validation_case(
             f"{completed.stderr}"
         )
 
+    result_subdir = case.get(
+        "result_subdir",
+        "",
+    )
+
     results_path = (
         output_dir
+        / result_subdir
         / "resultados.json"
     )
 
