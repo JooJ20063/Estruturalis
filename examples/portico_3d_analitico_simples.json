@@ -1,0 +1,115 @@
+{
+    "name": "portico_3d_analitico_simples",
+    "analysis_type": "frame3d",
+
+    "nodes": [
+        {
+            "id": 1,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 2,
+            "x": 4.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        {
+            "id": 3,
+            "x": 0.0,
+            "y": 0.0,
+            "z": 3.0
+        },
+        {
+            "id": 4,
+            "x": 4.0,
+            "y": 0.0,
+            "z": 3.0
+        }
+    ],
+
+    "materials": [
+        {
+            "id": 1,
+            "name": "concreto_C25",
+            "E": 25000000.0,
+            "gamma": 25.0,
+            "poisson": 0.2
+        }
+    ],
+
+    "sections": [
+        {
+            "id": 1,
+            "name": "secao_30x30",
+            "type": "rectangular",
+            "b": 0.30,
+            "h": 0.30,
+            "A": 0.09,
+            "I": 0.000675,
+            "Iy": 0.000675,
+            "Iz": 0.000675,
+            "J": 0.00135
+        }
+    ],
+
+    "elements": [
+        {
+            "id": 1,
+            "node_i": 1,
+            "node_j": 3,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 2,
+            "node_i": 3,
+            "node_j": 4,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        },
+        {
+            "id": 3,
+            "node_i": 2,
+            "node_j": 4,
+            "material": 1,
+            "section": 1,
+            "kind": "frame3d"
+        }
+    ],
+
+    "supports": [
+        {
+            "node": 1,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        },
+        {
+            "node": 2,
+            "ux": true,
+            "uy": true,
+            "uz": true,
+            "rx": true,
+            "ry": true,
+            "rz": true
+        }
+    ],
+
+    "nodal_loads": [
+        {
+            "node": 3,
+            "fx": 10.0
+        },
+        {
+            "node": 4,
+            "fx": 10.0
+        }
+    ]
+}
